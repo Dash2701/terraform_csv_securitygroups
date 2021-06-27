@@ -26,7 +26,7 @@ for environment in environments:
 
     with open(filename,'a',newline='') as policy_file:
             writer = csv.writer(policy_file)
-            writer.writerow(["rule_id","source_name","source_cidr","destination_name","destination_cidr","protocol","From_Port","To_Port","Description"])
+            writer.writerow(["rule_id","source_name","source_cidr","destination_name","protocol","From_Port","To_Port","Description"])
              
         
           #Read the csv file. 
