@@ -1,0 +1,4 @@
+rule_id,source_name,source_cidr,destination_name,destination_cidr,protocol,From_Port,To_Port,Description
+ID1,Internet,0.0.0.0/0,sample-sg,TCP,80,80,External connectivity from Meters
+ID2,Internet,0.0.0.0/0,sample-sg,TCP,443,443,External connectivity from Meters
+ID3,SampleServer,8.8.8.8/32,sample-sg,TCP,1521,1521,Database access

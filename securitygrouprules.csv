@@ -1,0 +1,4 @@
+rule_id,Source,Destination,Protocol,Protocol L7,From_Port,To_Port,Description,Status
+ID1,Internet,sample-sg,TCP,HTTP,80,80,External connectivity from Meters,ACTIVE
+ID2,Internet,sample-sg,TCP,HTTPS,443,443,External connectivity from Meters,ACTIVE
+ID3,SampleServer,sample-sg,TCP,SQL,1521,1521,Database access,ACTIVE
