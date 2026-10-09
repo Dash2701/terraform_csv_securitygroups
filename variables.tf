@@ -27,6 +27,40 @@ variable "rules_csv_content" {
   type        = string
   default     = null
   nullable    = true
+
+  validation {
+    condition = var.rules_csv_content == null ? true : (
+      can(csvdecode(var.rules_csv_content)) &&
+      try(
+        length(csvdecode(var.rules_csv_content)) > 0 &&
+        alltrue([
+          for rule in csvdecode(var.rules_csv_content) :
+          length(setsubtract(
+            toset(["id", "type", "name", "cidr_block", "protocol", "from_port", "to_port", "description"]),
+            toset(keys(rule))
+          )) == 0 &&
+          trimspace(rule.id) != "" &&
+          trimspace(rule.name) != "" &&
+          contains(["ingress", "egress"], lower(trimspace(rule.type))) &&
+          tonumber(rule.from_port) >= 0 &&
+          tonumber(rule.from_port) <= 65535 &&
+          tonumber(rule.to_port) >= 0 &&
+          tonumber(rule.to_port) <= 65535 &&
+          tonumber(rule.from_port) <= tonumber(rule.to_port) &&
+          length([for cidr in split(",", rule.cidr_block) : cidr if trimspace(cidr) != ""]) > 0 &&
+          alltrue([
+            for cidr in split(",", rule.cidr_block) :
+            can(cidrhost(trimspace(cidr), 0))
+          ])
+        ]) &&
+        length(distinct([
+          for rule in csvdecode(var.rules_csv_content) : trimspace(rule.id)
+        ])) == length(csvdecode(var.rules_csv_content)),
+        false
+      )
+    )
+    error_message = "rules_csv_content must be valid CSV with the documented columns, unique non-empty IDs and names, ingress or egress types, valid ordered ports from 0 through 65535, and valid comma-separated CIDRs."
+  }
 }
 
 variable "security_group_tags" {
