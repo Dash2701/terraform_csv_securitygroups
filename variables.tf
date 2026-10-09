@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "AWS region in which to manage security groups."
   type        = string
-  default     = "us-east-1"
+  default     = "us-west-2"
 }
 
 variable "aws_profile" {
