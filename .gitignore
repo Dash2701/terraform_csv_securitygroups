@@ -1,5 +1,6 @@
 # For Terraform Remote State Back up 
 .terraform/
+.worktrees/
 *.tfstate
 *.backup
 #  include for scenario of multiple developers
