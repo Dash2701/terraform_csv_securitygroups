@@ -1,6 +1,96 @@
 # Terraform CSV Security Groups
 
-This module creates AWS security groups and rules from CSV content.
+## Overview
+
+This Terraform module creates AWS security groups and standalone security-group
+rules from CSV content. It is intended for teams that review network rules in a
+tabular format while managing their lifecycle through Terraform.
+
+> [!CAUTION]
+> CSV content controls network access. Review every `terraform plan` before
+> applying it. Rules using `0.0.0.0/0` or `::/0` require deliberate security
+> review.
+
+## How it works
+
+1. The module reads `rules_csv_content`, or renders
+   `securitygrouprules.tpl` when that input is null.
+2. Terraform decodes and validates every row, including unique IDs, rule type,
+   ports, and IPv4 or IPv6 CIDRs.
+3. Group names are deduplicated into `aws_security_group` resources.
+4. Each CSV row becomes one `aws_security_group_rule`. Mixed IPv4 and IPv6
+   lists are sent to the matching AWS provider arguments.
+5. Outputs expose created IDs and the normalized rules used by the plan.
+
+The module uses an existing VPC. It does not create a VPC, attach security
+groups to workloads, or configure remote state.
+
+## Prerequisites
+
+- Terraform `>= 1.7.0, < 2.0.0`
+- AWS provider `>= 4.66.1, < 6.0.0`
+- An existing VPC and permission to manage security groups and rules in it
+- AWS credentials supplied through environment/workload credentials or the
+  optional `aws_profile` input
+
+TFLint, Checkov, terraform-docs, and pre-commit are required only for the full
+local contributor workflow.
+
+## Quick start
+
+The example contains synthetic private networks and no usable account or VPC
+identifier:
+
+```bash
+cd examples/basic
+cp terraform.tfvars.example terraform.tfvars
+# Replace vpc-xxxxxxxxxxxxxxxxx with a dedicated non-production VPC ID.
+terraform init -backend=false
+terraform plan
+terraform apply
+```
+
+For module usage, copy the module block from `examples/basic/main.tf` and
+provide `vpc_id`, CSV content, and your required tags. Prefer environment or
+workload credentials over a shared-credentials profile.
+
+## CSV schema
+
+CSV must include this exact header:
+
+```csv
+id,type,name,cidr_block,protocol,from_port,to_port,description
+```
+
+| Column | Contract |
+| --- | --- |
+| `id` | Unique, non-empty Terraform key for the rule. |
+| `type` | `ingress` or `egress` (case-insensitive). |
+| `name` | Non-empty security-group name; repeated names share one group. |
+| `cidr_block` | One valid IPv4/IPv6 CIDR or a quoted comma-separated list. |
+| `protocol` | AWS protocol value such as `tcp`, `udp`, `icmp`, or `-1`. |
+| `from_port` | Integer from `0` through `65535`. |
+| `to_port` | Integer from `0` through `65535`, not less than `from_port`. |
+| `description` | Rule description passed to AWS. |
+
+Example:
+
+```csv
+id,type,name,cidr_block,protocol,from_port,to_port,description
+api-https,ingress,example-api,10.0.0.0/24,tcp,443,443,HTTPS from app network
+dns,egress,example-api,"10.0.1.0/24,2001:db8::/64",udp,53,53,DNS to shared networks
+```
+
+Quote `cidr_block` when it contains multiple comma-separated CIDRs. Whitespace
+around individual CIDRs is removed.
+
+## Default template
+
+When `rules_csv_content` is null, the module renders
+`securitygrouprules.tpl`. The `node_group_cidr` input replaces
+`${node_group_cidr}` in that template. Pass explicit CSV content for
+environment-specific rule sets; do not put credentials or account identifiers
+in CSV fixtures.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -48,3 +138,87 @@ No modules.
 | <a name="output_sg_app_details"></a> [sg\_app\_details](#output\_sg\_app\_details) | Compatibility output containing normalized CSV rules. |
 | <a name="output_sgs"></a> [sgs](#output\_sgs) | Compatibility list of created security-group IDs. |
 <!-- END_TF_DOCS -->
+
+## Testing and quality
+
+The default suite mocks the AWS provider and requires no AWS credentials:
+
+```bash
+terraform fmt -check -recursive
+terraform init -backend=false
+terraform validate
+terraform test
+tflint --init
+tflint --recursive
+checkov --config-file .checkov.yml
+terraform-docs markdown table --config .terraform-docs.yml .
+./scripts/check-repository-hygiene.sh
+pre-commit run --all-files
+```
+
+`terraform test` covers valid transformations, deduplication, mixed IPv4/IPv6
+CIDRs, port ranges, descriptions, and invalid CSV contracts.
+
+The real-AWS test is intentionally excluded from default discovery. Use only a
+dedicated test VPC and least-privilege credentials:
+
+```bash
+RUN_AWS_INTEGRATION_TESTS=true \
+TEST_VPC_ID=vpc-replace-with-test-vpc \
+./scripts/run-integration-tests.sh
+```
+
+Terraform test destroys resources after the apply run. Treat cleanup failures
+as failures and remove any remaining test security group manually.
+
+## Continuous integration
+
+`.github/workflows/quality.yml` runs formatting, initialization without a
+backend, validation, AWS-free tests, generated-doc checks, repository hygiene,
+TFLint, and Checkov on pull requests and pushes to `main`. It does not request
+AWS credentials.
+
+`.github/workflows/integration.yml` is manual-only. It requires confirmation,
+a test VPC ID, and a repository variable named `AWS_ROLE_TO_ASSUME`. It obtains
+short-lived credentials through GitHub OIDC and calls the same guarded
+integration script used locally.
+
+## Security considerations
+
+- Review the complete plan for CIDR, protocol, and port changes before apply.
+- Avoid public CIDRs unless the exposure is intentional and approved.
+- Terraform state can contain sensitive infrastructure metadata. Do not commit
+  state, plans, credentials, environment files, or `.terraform/`.
+- Use least-privilege AWS roles. CI should use OIDC rather than long-lived
+  access keys.
+- Security groups are created but not attached; consumers must attach the
+  returned IDs to the intended AWS resources.
+
+See `SECURITY.md` for reporting and operational guidance.
+
+## Cleanup
+
+For the basic example:
+
+```bash
+cd examples/basic
+terraform destroy
+rm -rf .terraform
+rm -f terraform.tfstate terraform.tfstate.backup terraform.tfvars
+```
+
+Never delete state until Terraform has destroyed or relinquished the managed
+resources. The repository hygiene check reports forbidden tracked artifacts
+without printing their contents.
+
+## Limitations and extension points
+
+- The module supports CIDR-based rules only; source security groups, prefix
+  lists, and self-references require additional schema fields.
+- Security-group names must be unique within the target VPC.
+- Rule updates use standalone `aws_security_group_rule` resources and therefore
+  follow that provider resource's replacement behavior.
+- The default template is an example. Production callers should supply
+  reviewed CSV content and organization-specific tags.
+- Remote state, workload attachment, and production integration-test
+  orchestration are intentionally outside this repository.
