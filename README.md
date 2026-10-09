@@ -165,11 +165,13 @@ dedicated test VPC and least-privilege credentials:
 ```bash
 RUN_AWS_INTEGRATION_TESTS=true \
 TEST_VPC_ID=vpc-replace-with-test-vpc \
+TEST_AWS_REGION=us-east-1 \
 ./scripts/run-integration-tests.sh
 ```
 
-Terraform test destroys resources after the apply run. Treat cleanup failures
-as failures and remove any remaining test security group manually.
+`TEST_AWS_REGION` must be the region containing `TEST_VPC_ID`. Terraform test
+destroys resources after the apply run. Treat cleanup failures as failures and
+remove any remaining test security group manually.
 
 ## Continuous integration
 

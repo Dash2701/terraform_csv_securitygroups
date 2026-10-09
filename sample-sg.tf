@@ -9,7 +9,7 @@ locals {
   sg_app_details = [
     for rule in local.decoded_rules : {
       id          = rule.id
-      type        = lower(rule.type)
+      type        = lower(trimspace(rule.type))
       name        = rule.name
       description = rule.description
       protocol    = lower(rule.protocol)

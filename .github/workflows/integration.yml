@@ -33,6 +33,7 @@ jobs:
     env:
       RUN_AWS_INTEGRATION_TESTS: "true"
       TEST_VPC_ID: ${{ inputs.vpc_id }}
+      TEST_AWS_REGION: ${{ inputs.aws_region }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1

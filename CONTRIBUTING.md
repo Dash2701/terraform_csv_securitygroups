@@ -79,6 +79,7 @@ describe, tag, and delete security groups and rules. Explicitly opt in:
 ```bash
 RUN_AWS_INTEGRATION_TESTS=true \
 TEST_VPC_ID=vpc-replace-with-test-vpc \
+TEST_AWS_REGION=us-east-1 \
 ./scripts/run-integration-tests.sh
 ```
 

@@ -42,6 +42,11 @@ run "normalizes_security_group_rules" {
   }
 
   assert {
+    condition     = { for rule in output.security_group_rules : rule.id => rule }["single-443"].type == "ingress"
+    error_message = "Expected surrounding rule-type whitespace to be removed during normalization."
+  }
+
+  assert {
     condition     = { for rule in output.security_group_rules : rule.id => rule }["port-range"].from_port == 8000 && { for rule in output.security_group_rules : rule.id => rule }["port-range"].to_port == 8080
     error_message = "Expected the worker port range to remain 8000 through 8080."
   }

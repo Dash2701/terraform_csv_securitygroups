@@ -53,8 +53,9 @@ organizational approval for public exposure and broad administrative ports.
 
 ## Integration-test safety
 
-The default suite mocks AWS. Real integration requires both
-`RUN_AWS_INTEGRATION_TESTS=true` and `TEST_VPC_ID`, and should run only in a
-dedicated non-production VPC. Terraform test attempts cleanup after apply.
-Treat cleanup failures as incidents: inspect the test output and remove
-remaining security groups or rules before rerunning.
+The default suite mocks AWS. Real integration requires
+`RUN_AWS_INTEGRATION_TESTS=true`, `TEST_VPC_ID`, and the matching
+`TEST_AWS_REGION`, and should run only in a dedicated non-production VPC.
+Terraform test attempts cleanup after apply. Treat cleanup failures as
+incidents: inspect the test output and remove remaining security groups or
+rules before rerunning.

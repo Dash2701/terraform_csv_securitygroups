@@ -33,6 +33,7 @@ for expected in \
   "AWS_ROLE_TO_ASSUME" \
   "RUN_AWS_INTEGRATION_TESTS: \"true\"" \
   "TEST_VPC_ID:" \
+  "TEST_AWS_REGION:" \
   "./scripts/run-integration-tests.sh"; do
   grep -Fq "${expected}" "${integration}"
 done

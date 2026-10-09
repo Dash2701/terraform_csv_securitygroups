@@ -29,7 +29,8 @@ for expected in \
   "terraform test" \
   "terraform-docs" \
   "pre-commit run --all-files" \
-  "RUN_AWS_INTEGRATION_TESTS"; do
+  "RUN_AWS_INTEGRATION_TESTS" \
+  "TEST_AWS_REGION"; do
   grep -Fq "${expected}" "${contributing}"
 done
 
