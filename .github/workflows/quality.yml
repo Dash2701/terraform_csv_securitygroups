@@ -1,0 +1,79 @@
+name: Terraform quality
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4.0.1
+        with:
+          terraform_version: 1.15.2
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive
+
+      - name: Initialize Terraform
+        run: terraform init -backend=false
+
+      - name: Validate Terraform
+        run: terraform validate
+
+      - name: Run AWS-free tests
+        run: terraform test
+
+      - name: Check repository hygiene
+        run: ./scripts/check-repository-hygiene.sh
+
+      - name: Check generated Terraform documentation
+        uses: terraform-docs/gh-actions@v1.4.1
+        with:
+          config-file: .terraform-docs.yml
+          fail-on-diff: "true"
+          git-push: "false"
+          output-file: README.md
+          output-method: inject
+          working-dir: .
+
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up TFLint
+        uses: terraform-linters/setup-tflint@v6.3.2
+        with:
+          tflint_version: v0.64.0
+
+      - name: Initialize TFLint plugins
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint --recursive
+
+  checkov:
+    name: Checkov
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          config_file: .checkov.yml
+          version: 3.3.26
