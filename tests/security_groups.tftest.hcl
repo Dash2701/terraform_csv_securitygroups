@@ -9,7 +9,6 @@ mock_provider "aws" {
 }
 
 variables {
-  vpc_cidr          = "172.168.0.0/16"
   rules_csv_content = file("tests/fixtures/valid-rules.csv")
   security_group_tags = {
     environment = "test"
@@ -30,8 +29,8 @@ run "creates_and_uses_the_module_vpc" {
   command = plan
 
   assert {
-    condition     = aws_vpc.main_vpc.cidr_block == "172.168.0.0/16"
-    error_message = "Expected the module to create the configured VPC."
+    condition     = aws_vpc.main_vpc.cidr_block == "172.16.0.0/16"
+    error_message = "Expected the module to create the default RFC1918 VPC."
   }
 
   assert {

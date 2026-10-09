@@ -14,5 +14,5 @@ variable "aws_profile" {
 variable "vpc_cidr" {
   description = "IPv4 CIDR block for the VPC created by the example."
   type        = string
-  default     = "172.168.0.0/16"
+  default     = "172.16.0.0/16"
 }

@@ -1,7 +1,7 @@
 mock_provider "aws" {}
 
 variables {
-  vpc_cidr = "172.168.0.0/16"
+  vpc_cidr = "172.16.0.0/16"
 }
 
 run "reject_invalid_vpc_cidr" {

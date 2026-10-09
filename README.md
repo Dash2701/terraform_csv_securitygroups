@@ -129,7 +129,7 @@ No modules.
 | <a name="input_node_group_cidr"></a> [node\_group\_cidr](#input\_node\_group\_cidr) | CIDR substituted into the default security-group rule template. | `string` | `"10.102.0.0/24"` | no |
 | <a name="input_rules_csv_content"></a> [rules\_csv\_content](#input\_rules\_csv\_content) | Optional CSV rule content. When null, securitygrouprules.tpl is rendered. | `string` | `null` | no |
 | <a name="input_security_group_tags"></a> [security\_group\_tags](#input\_security\_group\_tags) | Tags applied to every security group. | `map(string)` | `{}` | no |
-| <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | IPv4 CIDR block for the VPC created by this module. | `string` | `"172.168.0.0/16"` | no |
+| <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | IPv4 CIDR block for the VPC created by this module. | `string` | `"172.16.0.0/16"` | no |
 
 ## Outputs
 
