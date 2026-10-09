@@ -32,10 +32,14 @@ for expected in \
   "aws-actions/configure-aws-credentials@v6.3.0" \
   "AWS_ROLE_TO_ASSUME" \
   "RUN_AWS_INTEGRATION_TESTS: \"true\"" \
-  "TEST_VPC_ID:" \
   "TEST_AWS_REGION:" \
   "./scripts/run-integration-tests.sh"; do
   grep -Fq "${expected}" "${integration}"
 done
+
+if grep -Fq "vpc_id:" "${integration}" || grep -Fq "TEST_VPC_ID" "${integration}"; then
+  echo "The integration workflow must let the module create its own VPC." >&2
+  exit 1
+fi
 
 echo "Workflow contract checks passed."

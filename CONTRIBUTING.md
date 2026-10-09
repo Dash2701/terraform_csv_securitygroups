@@ -73,18 +73,18 @@ not part of this gate.
 
 ## AWS integration test
 
-Use a dedicated, non-production VPC and a least-privilege role that can create,
-describe, tag, and delete security groups and rules. Explicitly opt in:
+The integration test creates its own VPC. Use a non-production account and a
+least-privilege role that can create, describe, modify, tag, and delete VPCs,
+security groups, and rules. Explicitly opt in:
 
 ```bash
 RUN_AWS_INTEGRATION_TESTS=true \
-TEST_VPC_ID=vpc-replace-with-test-vpc \
 TEST_AWS_REGION=us-east-1 \
 ./scripts/run-integration-tests.sh
 ```
 
-Do not run the test against a shared or production VPC. Terraform test normally
-destroys applied resources; investigate and clean up any failed teardown.
+Do not run the test in a production account. Terraform test normally destroys
+the VPC and related resources; investigate and clean up any failed teardown.
 
 ## Pull requests
 

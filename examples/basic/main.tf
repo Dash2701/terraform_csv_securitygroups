@@ -3,7 +3,7 @@ module "security_groups" {
 
   aws_region  = var.aws_region
   aws_profile = var.aws_profile
-  vpc_id      = var.vpc_id
+  vpc_cidr    = var.vpc_cidr
 
   rules_csv_content = <<-CSV
     id,type,name,cidr_block,protocol,from_port,to_port,description

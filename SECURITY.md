@@ -31,11 +31,11 @@ than repository secrets containing long-lived AWS keys.
 
 ## Required AWS permissions
 
-Grant only the EC2 security-group actions required to create, describe, tag,
-authorize/revoke rules, and delete test resources in the selected region and
-test VPC. Restrict the trust policy for the GitHub OIDC role to this repository
-and the intended workflow context. Do not reuse a production deployment role
-for integration tests.
+Grant only the EC2 actions required to create, describe, modify, tag, and
+delete the test VPC and to manage its security groups and rules. Restrict the
+trust policy for the GitHub OIDC role to this repository and the intended
+workflow context. Do not reuse a production deployment role for integration
+tests.
 
 ## Reviewing network rules
 
@@ -51,11 +51,15 @@ Every change to CSV content is a network-policy change. Review:
 Descriptions and tags aid review but are not enforcement controls. Require
 organizational approval for public exposure and broad administrative ports.
 
+The module clears the created VPC's default security-group rules. VPC flow
+logging is not configured because its destination, retention, encryption, and
+IAM policy are deployment-specific. Configure VPC flow logging in the calling
+environment before using the VPC for production workloads.
+
 ## Integration-test safety
 
 The default suite mocks AWS. Real integration requires
-`RUN_AWS_INTEGRATION_TESTS=true`, `TEST_VPC_ID`, and the matching
-`TEST_AWS_REGION`, and should run only in a dedicated non-production VPC.
-Terraform test attempts cleanup after apply. Treat cleanup failures as
-incidents: inspect the test output and remove remaining security groups or
-rules before rerunning.
+`RUN_AWS_INTEGRATION_TESTS=true` and `TEST_AWS_REGION`, creates its own VPC,
+and should run only in a non-production account. Terraform test attempts
+cleanup after apply. Treat cleanup failures as incidents: inspect the test
+output and remove remaining VPC or security-group resources before rerunning.

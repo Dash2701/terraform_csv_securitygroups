@@ -9,6 +9,7 @@ security="${repo_root}/SECURITY.md"
 for expected in \
   "## Overview" \
   "## How it works" \
+  "creates its own VPC" \
   "## Prerequisites" \
   "## Quick start" \
   "## CSV schema" \
@@ -16,6 +17,7 @@ for expected in \
   "## Testing and quality" \
   "## Continuous integration" \
   "## Security considerations" \
+  "VPC flow logging" \
   "## Cleanup" \
   "## Limitations and extension points" \
   "0.0.0.0/0" \
@@ -30,7 +32,8 @@ for expected in \
   "terraform-docs" \
   "pre-commit run --all-files" \
   "RUN_AWS_INTEGRATION_TESTS" \
-  "TEST_AWS_REGION"; do
+  "TEST_AWS_REGION" \
+  "creates its own VPC"; do
   grep -Fq "${expected}" "${contributing}"
 done
 

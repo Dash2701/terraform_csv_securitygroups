@@ -28,7 +28,7 @@ resource "aws_security_group" "security_groups" {
 
   name        = each.key
   description = "Managed from CSV rules for ${each.key}"
-  vpc_id      = var.vpc_id
+  vpc_id      = aws_vpc.main_vpc.id
   tags        = var.security_group_tags
 }
 

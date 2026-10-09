@@ -1,7 +1,15 @@
-mock_provider "aws" {}
+mock_provider "aws" {
+  override_resource {
+    target          = aws_vpc.main_vpc
+    override_during = plan
+    values = {
+      id = "vpc-created-by-module"
+    }
+  }
+}
 
 variables {
-  vpc_id            = "vpc-00000000000000000"
+  vpc_cidr          = "172.168.0.0/16"
   rules_csv_content = file("tests/fixtures/valid-rules.csv")
   security_group_tags = {
     environment = "test"
@@ -15,6 +23,25 @@ run "normalizes_security_group_names" {
   assert {
     condition     = toset(output.security_group_names) == toset(["api", "worker"])
     error_message = "Expected CSV group names to be deduplicated."
+  }
+}
+
+run "creates_and_uses_the_module_vpc" {
+  command = plan
+
+  assert {
+    condition     = aws_vpc.main_vpc.cidr_block == "172.168.0.0/16"
+    error_message = "Expected the module to create the configured VPC."
+  }
+
+  assert {
+    condition     = alltrue([for group in aws_security_group.security_groups : group.vpc_id == "vpc-created-by-module"])
+    error_message = "Expected every generated security group to use the module-created VPC."
+  }
+
+  assert {
+    condition     = aws_default_security_group.main_vpc.vpc_id == "vpc-created-by-module"
+    error_message = "Expected the module to manage the created VPC's default security group."
   }
 }
 

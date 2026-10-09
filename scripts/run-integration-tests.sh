@@ -6,17 +6,12 @@ if [[ "${RUN_AWS_INTEGRATION_TESTS:-}" != "true" ]]; then
   exit 2
 fi
 
-if [[ -z "${TEST_VPC_ID:-}" ]]; then
-  echo "TEST_VPC_ID must be set to a dedicated test VPC." >&2
-  exit 2
-fi
-
 if [[ -z "${TEST_AWS_REGION:-}" ]]; then
-  echo "TEST_AWS_REGION must be set to the test VPC's AWS region." >&2
+  echo "TEST_AWS_REGION must be set to the AWS region for the test resources." >&2
   exit 2
 fi
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "${repo_root}"
 
-terraform test -test-directory=tests/integration -var="vpc_id=${TEST_VPC_ID}" -var="aws_region=${TEST_AWS_REGION}"
+terraform test -test-directory=tests/integration -var="aws_region=${TEST_AWS_REGION}"

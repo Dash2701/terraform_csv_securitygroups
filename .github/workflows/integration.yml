@@ -7,12 +7,8 @@ on:
         description: Run an apply test that creates and destroys AWS resources
         required: true
         type: boolean
-      vpc_id:
-        description: Dedicated test VPC ID
-        required: true
-        type: string
       aws_region:
-        description: AWS region containing the test VPC
+        description: AWS region in which to create the test VPC
         required: true
         default: us-east-1
         type: string
@@ -32,7 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RUN_AWS_INTEGRATION_TESTS: "true"
-      TEST_VPC_ID: ${{ inputs.vpc_id }}
       TEST_AWS_REGION: ${{ inputs.aws_region }}
     steps:
       - name: Check out repository

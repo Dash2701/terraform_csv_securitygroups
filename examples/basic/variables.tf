@@ -11,7 +11,8 @@ variable "aws_profile" {
   nullable    = true
 }
 
-variable "vpc_id" {
-  description = "ID of an existing VPC used for the example."
+variable "vpc_cidr" {
+  description = "IPv4 CIDR block for the VPC created by the example."
   type        = string
+  default     = "172.168.0.0/16"
 }

@@ -11,9 +11,15 @@ variable "aws_profile" {
   nullable    = true
 }
 
-variable "vpc_id" {
-  description = "ID of the existing VPC in which to create security groups."
+variable "vpc_cidr" {
+  description = "IPv4 CIDR block for the VPC created by this module."
   type        = string
+  default     = "172.168.0.0/16"
+
+  validation {
+    condition     = can(cidrnetmask(var.vpc_cidr))
+    error_message = "vpc_cidr must be a valid IPv4 CIDR block."
+  }
 }
 
 variable "node_group_cidr" {

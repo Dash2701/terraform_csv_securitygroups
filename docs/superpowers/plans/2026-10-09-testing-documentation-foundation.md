@@ -10,6 +10,10 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-09-testing-documentation-foundation-design.md`
 
+> **Post-plan correction:** Apply testing confirmed that the repository is
+> intended to create the VPC in `vpc.tf`. The spec amendment supersedes plan
+> steps that delete `vpc.tf` or require an existing `vpc_id`.
+
 ## Global Constraints
 
 - The default verification path must be deterministic and require no AWS credentials.

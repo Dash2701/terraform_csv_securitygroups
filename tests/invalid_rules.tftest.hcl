@@ -1,7 +1,17 @@
 mock_provider "aws" {}
 
 variables {
-  vpc_id = "vpc-00000000000000000"
+  vpc_cidr = "172.168.0.0/16"
+}
+
+run "reject_invalid_vpc_cidr" {
+  command = plan
+
+  variables {
+    vpc_cidr = "not-a-cidr"
+  }
+
+  expect_failures = [var.vpc_cidr]
 }
 
 run "reject_duplicate_ids" {

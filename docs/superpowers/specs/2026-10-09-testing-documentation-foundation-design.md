@@ -3,6 +3,14 @@
 **Date:** 2026-10-09  
 **Status:** Approved for implementation planning
 
+## Amendment: module-owned VPC
+
+After apply testing, the intended repository contract was clarified: this
+module always creates the VPC defined in `vpc.tf` and creates its security
+groups in that VPC. The `vpc_id` input and the earlier existing-VPC boundary
+are superseded by a validated `vpc_cidr` input. Examples and integration tests
+must create and destroy the VPC with the security groups.
+
 ## Goal
 
 Make the Terraform repository safe to change and understandable to new

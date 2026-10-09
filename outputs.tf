@@ -3,6 +3,11 @@ output "security_group_ids" {
   value       = { for name, group in aws_security_group.security_groups : name => group.id }
 }
 
+output "vpc_id" {
+  description = "ID of the VPC created by this module."
+  value       = aws_vpc.main_vpc.id
+}
+
 output "security_group_names" {
   description = "Sorted, deduplicated security-group names from the CSV input."
   value       = local.sg_app_names
