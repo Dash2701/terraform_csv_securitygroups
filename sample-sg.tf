@@ -30,6 +30,10 @@ resource "aws_security_group" "security_groups" {
   description = "Managed from CSV rules for ${each.key}"
   vpc_id      = aws_vpc.main_vpc.id
   tags        = var.security_group_tags
+
+  lifecycle {
+    ignore_changes = [tags["creatorId"], tags["CreatorName"]]
+  }
 }
 
 resource "aws_security_group_rule" "samplesg_ingress" {

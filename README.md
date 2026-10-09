@@ -27,6 +27,12 @@ tabular format while managing their lifecycle through Terraform.
 The module creates its own VPC. It does not attach security groups to workloads
 or configure remote state.
 
+The VPC, generated security groups, and default security group ignore changes
+to the case-sensitive `creatorId` and `CreatorName` tags after creation. This
+preserves creator metadata maintained outside Terraform while all other tags
+remain managed normally. Creator tags supplied in `security_group_tags` are
+still applied when security groups are first created.
+
 ## Prerequisites
 
 - Terraform `>= 1.7.0, < 2.0.0`
@@ -162,6 +168,8 @@ pre-commit run --all-files
 
 `terraform test` covers valid transformations, deduplication, mixed IPv4/IPv6
 CIDRs, port ranges, descriptions, and invalid CSV contracts.
+It also verifies that creator tags are applied on creation, ignored on later
+changes or removal, and do not prevent updates to other security-group tags.
 
 The real-AWS test is intentionally excluded from default discovery. It creates
 and destroys its own VPC, so use a non-production account and least-privilege
