@@ -23,6 +23,7 @@ locals {
 }
 
 resource "aws_security_group" "security_groups" {
+  #checkov:skip=CKV2_AWS_5: This reusable module creates security groups for consumers to attach.
   for_each = toset(local.sg_app_names)
 
   name        = each.key
