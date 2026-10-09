@@ -1,48 +1,46 @@
+locals {
+  rules_csv = var.rules_csv_content != null ? var.rules_csv_content : templatefile(
+    "${path.module}/securitygrouprules.tpl",
+    { node_group_cidr = var.node_group_cidr }
+  )
 
-# Create Security group for Sample SG 
+  decoded_rules = csvdecode(local.rules_csv)
 
-resource "aws_security_group" "samplesg" {
+  sg_app_details = [
+    for rule in local.decoded_rules : {
+      id          = rule.id
+      type        = lower(trimspace(rule.type))
+      name        = rule.name
+      description = rule.description
+      protocol    = lower(rule.protocol)
+      from_port   = tonumber(rule.from_port)
+      to_port     = tonumber(rule.to_port)
+      cidr_blocks = [for cidr in split(",", rule.cidr_block) : trimspace(cidr)]
+    }
+  ]
 
-  name = "sample-sg"
-
-  vpc_id = aws_vpc.main_vpc.id
-
+  sg_app_names = sort(distinct([for rule in local.sg_app_details : rule.name]))
 }
 
-locals {
-  csv_data_app = file("sg/qa/sample-sg.csv")
-  appip        = csvdecode(local.csv_data_app)
+resource "aws_security_group" "security_groups" {
+  #checkov:skip=CKV2_AWS_5: This reusable module creates security groups for consumers to attach.
+  for_each = toset(local.sg_app_names)
 
-  sg_app_details = flatten([
-
-    for sggr in local.appip : {
-      rule_id     = sggr.rule_id
-      description = sggr.Description
-      protocol    = sggr.protocol
-      from_port   = sggr.From_Port
-      to_port     = sggr.To_Port
-      cidr_blocks = split(",", sggr.source_cidr)
-    }
-  ])
+  name        = each.key
+  description = "Managed from CSV rules for ${each.key}"
+  vpc_id      = aws_vpc.main_vpc.id
+  tags        = var.security_group_tags
 }
 
 resource "aws_security_group_rule" "samplesg_ingress" {
-  count             = length(local.sg_app_details)
-  security_group_id = aws_security_group.samplesg.id
-  type              = "ingress"
-  description       = "${local.sg_app_details[count.index].rule_id}-${local.sg_app_details[count.index].description}"
-  protocol          = local.sg_app_details[count.index].protocol
-  from_port         = local.sg_app_details[count.index].from_port
-  to_port           = local.sg_app_details[count.index].to_port
-  cidr_blocks       = local.sg_app_details[count.index].cidr_blocks
-}
+  for_each = { for rule in local.sg_app_details : rule.id => rule }
 
-resource "aws_security_group_rule" "samplesg_egress" {
-  type              = "egress"
-  security_group_id = aws_security_group.samplesg.id
-  description       = "App SG Egress"
-  protocol          = "-1"
-  from_port         = "0"
-  to_port           = "0"
-  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.security_groups[each.value.name].id
+  type              = each.value.type
+  description       = each.value.description
+  protocol          = each.value.protocol
+  from_port         = each.value.from_port
+  to_port           = each.value.to_port
+  cidr_blocks       = [for cidr in each.value.cidr_blocks : cidr if !strcontains(cidr, ":")]
+  ipv6_cidr_blocks  = [for cidr in each.value.cidr_blocks : cidr if strcontains(cidr, ":")]
 }

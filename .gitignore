@@ -2,6 +2,15 @@
 .terraform/
 .worktrees/
 *.tfstate
+*.tfstate.*
+*.tfplan
 *.backup
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+.env
+*.tf__
+examples/**/.terraform.lock.hcl
+.tools/
 #  include for scenario of multiple developers
 #.terraform.lock.hcl

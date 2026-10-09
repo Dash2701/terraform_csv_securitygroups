@@ -1,0 +1,52 @@
+name: AWS integration test
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Run an apply test that creates and destroys AWS resources
+        required: true
+        type: boolean
+      aws_region:
+        description: AWS region in which to create the test VPC
+        required: true
+        default: us-east-1
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: terraform-csv-securitygroups-integration
+  cancel-in-progress: false
+
+jobs:
+  integration:
+    name: Apply and destroy test resources
+    if: ${{ inputs.confirm == true }}
+    runs-on: ubuntu-latest
+    env:
+      RUN_AWS_INTEGRATION_TESTS: "true"
+      TEST_AWS_REGION: ${{ inputs.aws_region }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4.0.1
+        with:
+          terraform_version: 1.15.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          role-session-name: terraform-csv-securitygroups-integration
+
+      - name: Initialize Terraform
+        run: terraform init -backend=false
+
+      - name: Apply and destroy integration resources
+        run: ./scripts/run-integration-tests.sh

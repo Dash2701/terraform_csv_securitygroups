@@ -1,0 +1,3 @@
+id,type,name,cidr_block,protocol,from_port,to_port,description
+duplicate,ingress,api,10.0.0.0/24,tcp,443,443,First rule
+duplicate,egress,api,10.0.1.0/24,tcp,443,443,Second rule

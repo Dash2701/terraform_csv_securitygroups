@@ -1,0 +1,3 @@
+aws_region  = "us-east-1"
+aws_profile = null
+vpc_cidr    = "172.16.0.0/16"

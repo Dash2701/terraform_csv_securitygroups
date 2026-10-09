@@ -1,0 +1,4 @@
+id,type,name,cidr_block,protocol,from_port,to_port,description
+reversed,ingress,api,10.0.0.0/24,tcp,9000,8000,Reversed range
+negative,ingress,api,10.0.1.0/24,tcp,-1,443,Negative port
+too-high,egress,api,10.0.2.0/24,tcp,443,65536,Port above maximum
