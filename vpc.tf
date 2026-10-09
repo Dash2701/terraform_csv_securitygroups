@@ -5,7 +5,7 @@ resource "aws_vpc" "main_vpc" {
   enable_dns_hostnames = true
 
   lifecycle {
-    ignore_changes = [tags["creatorId"], tags["CreatorName"]]
+    ignore_changes = [tags["CreatorId"], tags["CreatorName"]]
   }
 }
 
@@ -14,6 +14,6 @@ resource "aws_default_security_group" "main_vpc" {
   tags   = var.security_group_tags
 
   lifecycle {
-    ignore_changes = [tags["creatorId"], tags["CreatorName"]]
+    ignore_changes = [tags["CreatorId"], tags["CreatorName"]]
   }
 }
