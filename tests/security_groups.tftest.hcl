@@ -27,8 +27,13 @@ run "normalizes_security_group_rules" {
   }
 
   assert {
-    condition     = { for rule in output.security_group_rules : rule.id => rule }["cidr-list"].cidr_blocks == ["10.0.0.0/24", "10.0.1.0/24"]
+    condition     = { for rule in output.security_group_rules : rule.id => rule }["cidr-list"].cidr_blocks == ["10.0.0.0/24", "10.0.1.0/24", "2001:db8::/64"]
     error_message = "Expected comma-separated CIDRs to be trimmed in source order."
+  }
+
+  assert {
+    condition     = toset(aws_security_group_rule.samplesg_ingress["cidr-list"].cidr_blocks) == toset(["10.0.0.0/24", "10.0.1.0/24"]) && toset(aws_security_group_rule.samplesg_ingress["cidr-list"].ipv6_cidr_blocks) == toset(["2001:db8::/64"])
+    error_message = "Expected IPv4 and IPv6 CIDRs to use their matching AWS rule arguments."
   }
 
   assert {

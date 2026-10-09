@@ -41,5 +41,6 @@ resource "aws_security_group_rule" "samplesg_ingress" {
   protocol          = each.value.protocol
   from_port         = each.value.from_port
   to_port           = each.value.to_port
-  cidr_blocks       = each.value.cidr_blocks
+  cidr_blocks       = [for cidr in each.value.cidr_blocks : cidr if !strcontains(cidr, ":")]
+  ipv6_cidr_blocks  = [for cidr in each.value.cidr_blocks : cidr if strcontains(cidr, ":")]
 }
